@@ -1,0 +1,67 @@
+//Function to execute the request with 100 different test data
+
+public List<ProductCategory> CreateProductCategory(int numberOfObjects)
+        {
+            List<ProductCategory> listProductCategory = new List<ProductCategory>();
+            Boolean badUserId = true;
+
+            Audit audit = new Audit(1, 130, null, null, false);
+
+
+            for (int i = 1; i <= numberOfObjects; i++)
+            {
+                int createdByUserId;
+                if (badUserId)
+                {
+                    createdByUserId = 999;
+                }
+                else
+                {
+                    createdByUserId = 1;
+                    badUserId = false;
+                }
+
+                String title = Faker.Lorem.Sentence(1);
+
+                ProductCategory prodCat = new ProductCategory(Faker.Lorem.Sentence(1), Faker.Lorem.Sentence(5), 1, false, null, audit);
+                //productCategory.Description = Faker.Lorem.Sentences(5).ToString();
+
+                if (new Random().Next(0, 1) != 0)
+                {
+                    prodCat.Description = Faker.Lorem.Sentence(new Random().Next(1, 5));
+                }
+
+                listProductCategory.Add(prodCat);
+            }
+            return listProductCategory;
+        }
+        
+        
+        [TestCategory("ProductCategory")]
+        public void TestCreateProductCategoryFakeData()
+        {
+            restRequest.Resource = "productcategories";
+            restRequest.Method = Method.POST;
+
+            List<ProductCategory> lstProdCat = CreateProductCategory(100);
+
+            List<IRestResponse> responseList = new List<IRestResponse>();
+
+            foreach (ProductCategory prodCat in lstProdCat)
+            {
+                restRequest.AddJsonBody(prodCat);
+                System.Diagnostics.Debug.WriteLine(JsonConvert.SerializeObject(prodCat));
+
+
+                IRestResponse response = restClient.Execute(restRequest);
+                responseList.Add(response);
+            }
+
+            foreach (IRestResponse response in responseList)
+            {
+                System.Diagnostics.Debug.WriteLine(response.StatusCode + "----" + response.Content);
+
+            }
+
+        }
+        
